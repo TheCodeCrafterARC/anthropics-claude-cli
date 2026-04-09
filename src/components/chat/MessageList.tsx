@@ -10,6 +10,29 @@ interface MessageListProps {
   isLoading?: boolean;
 }
 
+function getToolLabel(toolName: string, args: Record<string, string>, isDone: boolean): string {
+  const path = args?.path ? args.path.replace(/^\//, "") : null;
+  const file = path ? path.split("/").pop() : null;
+
+  if (toolName === "str_replace_editor") {
+    const cmd = args?.command;
+    if (cmd === "create") return isDone ? `Created ${file ?? path}` : `Creating ${file ?? path}…`;
+    if (cmd === "str_replace") return isDone ? `Edited ${file ?? path}` : `Editing ${file ?? path}…`;
+    if (cmd === "insert") return isDone ? `Updated ${file ?? path}` : `Updating ${file ?? path}…`;
+    if (cmd === "view") return isDone ? `Viewed ${file ?? path}` : `Reading ${file ?? path}…`;
+    return isDone ? "File operation complete" : "Working on file…";
+  }
+
+  if (toolName === "file_manager") {
+    const cmd = args?.command;
+    if (cmd === "delete") return isDone ? `Deleted ${file ?? path}` : `Deleting ${file ?? path}…`;
+    if (cmd === "rename") return isDone ? `Renamed ${file ?? path}` : `Renaming ${file ?? path}…`;
+    return isDone ? "File updated" : "Updating file…";
+  }
+
+  return isDone ? toolName : `${toolName}…`;
+}
+
 export function MessageList({ messages, isLoading }: MessageListProps) {
   if (messages.length === 0) {
     return (
@@ -17,8 +40,8 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
         <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 mb-4 shadow-sm">
           <Bot className="h-7 w-7 text-blue-600" />
         </div>
-        <p className="text-neutral-900 font-semibold text-lg mb-2">Start a conversation to generate React components</p>
-        <p className="text-neutral-500 text-sm max-w-sm">I can help you create buttons, forms, cards, and more</p>
+        <p className="text-red-600 font-semibold text-lg mb-2">Start a conversation to generate React components</p>
+        <p className="text-red-400 text-sm max-w-sm">I can help you create buttons, forms, cards, and more</p>
       </div>
     );
   }
@@ -75,18 +98,17 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
                               </div>
                             );
                           case "tool-invocation":
-                            const tool = part.toolInvocation;
                             return (
                               <div key={partIndex} className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-neutral-50 rounded-lg text-xs font-mono border border-neutral-200">
-                                {tool.state === "result" && tool.result ? (
+                                {part.toolInvocation.state === "result" && part.toolInvocation.result ? (
                                   <>
                                     <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(part.toolInvocation.toolName, part.toolInvocation.args as Record<string, string>, true)}</span>
                                   </>
                                 ) : (
                                   <>
                                     <Loader2 className="w-3 h-3 animate-spin text-blue-600" />
-                                    <span className="text-neutral-700">{tool.toolName}</span>
+                                    <span className="text-neutral-700">{getToolLabel(part.toolInvocation.toolName, part.toolInvocation.args as Record<string, string>, false)}</span>
                                   </>
                                 )}
                               </div>

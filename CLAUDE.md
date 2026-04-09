@@ -15,7 +15,7 @@ npm run dev
 npm run build
 
 # Lint
-npm lint
+npm run lint
 
 # Run all tests
 npm test
@@ -28,6 +28,8 @@ npm run db:reset
 ```
 
 The dev server requires `NODE_OPTIONS='--require ./node-compat.cjs'` (already included in the npm scripts).
+
+Set `ANTHROPIC_API_KEY` in a `.env` file to use the real Claude API. Without it, `getLanguageModel()` returns `MockLanguageModel`, which streams static demo components.
 
 ## Architecture
 
